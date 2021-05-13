@@ -126,7 +126,7 @@ The predicted locality outputs are stored in <tempFolderPath>/SAIL_RD_results
 
 Tips:
 
-1) Keeping XInDepthCutoff, XOutDepthCutoff and YDepthCutoff set to 2 should be sifficient for dealing with localities upto size 6 gates. For evaluating a very large locality size above 6, you may try setting them to 3 or higher.
+1) Keeping XInDepthCutoff, XOutDepthCutoff and YDepthCutoff set to 2 should be sufficient for dealing with localities upto size 6 gates. For evaluating a very large locality size above 6, you may try setting them to 3 or higher.
 
 2) If you set YNodeCut to say "A", then for XNodeCut use "<A>_<A+1>_<A+2>". This is a general rule of thumb that we believe works best. Free feel to experiment.
 
@@ -138,7 +138,6 @@ Tips:
 
 
 **********************************************
-#Questions?
-Contact: Prabuddha Chakraborty (p.chakraborty@ufl.edu)
+
 
 
