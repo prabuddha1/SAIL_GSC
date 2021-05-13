@@ -1,0 +1,144 @@
+**********************************************
+Version 0.1.0
+
+Disclaimer: All software, documents, and HDL files, etc., are provided as is.
+Academic, non-commercial users may use all provided files without charge for non-commercial purposes.
+The tools and benchmarks provided here cannot be used for commercial purposes.
+
+All software is for internal use only. DO NOT DISTRIBUTE.
+
+You running this script/function means you will not blame the author(s) for any damage to your system or data. 
+
+**********************************************
+   _____         _____ _      
+  / ____|  /\   |_   _| |     
+ | (___   /  \    | | | |     
+  \___ \ / /\ \   | | | |     
+  ____) / ____ \ _| |_| |____
+ |_____/_/    \_\_____|______|
+
+**********************************************
+#System Requirements:
+----------------------------------------------
+SAIL 0.1.0 has been tested on the following:
+* Red Hat Enterprise Linux Server release 7.9 (Maipo) x86
+* Ubuntu 16.04.6 LTS x86
+
+**********************************************
+#Data Generation:
+----------------------------------------------
+
+SAIL 0.1.0 currently supports flattened Verilog designs and Cadence GSC 180nm standard cell library with the following gates only:
+AND2X1, AOI21X1, AOI22X1, INVX1, MX2X1, NAND2X1, NAND3X1, NAND4X1, NOR2X1, NOR3X1, NOR4X1, OAI21X1, OAI22X1,
+OAI33X1, OR2X1, OR4X1, XOR2X1, DFFSRX1
+
+Assign statements are only supported after input/output/wire declarations and before gate instance declarations.
+
+Pre-synthesis, post-synthesis locked design pairs should have the naming convention <design_name>_pre.v and <design_name>_post.v. The design_name should be same and cannot have '_' character.
+
+Example are provided in <RN-XOR_StandardDS_Test_Dataset> and  <RN-XOR_StandardDS_Train_Dataset>.
+
+**********************************************
+#Training a SAIL Model From Scratch:
+--------------------------------------------
+A pre-trained model has been provided (“./RN-XOR_FullModel.npy”). It has been trained with the GSC 180nm standard cell lib with limited cells.
+The synthesis tool used is Synopsys Design Compiler with high area and power efforts. All other settings are default.
+
+If you want to train a new model on pre-synthesis, post-synthesis locked designs see below steps:
+
+Executable to use: SAIL-RD_TrainModel (Run it from inside ./binary/)
+--------------------------------------------
+
+Sample Command:
+
+./SAIL-RD_TrainModel -XNodeCut 3_4_5 -XInDepthCutoff 2 -XOutDepthCutoff 2 -YNodeCut 3 -YDepthCutoff 2 -maxKeyBits 512 -keyBaseName_Train keyInPseudo -unityDSPath ../RN-XOR_StandardDS_Train_Dataset/ -lib -1 -verbose 0 -modelOutPath ../RN-XOR_SampleModel.npy
+
+-XNodeCut: A list of locality size cutoffs when constructing the post-synthesis locality representations. Multiple localities separated by "_".
+
+-XInDepthCutoff: Maximum posterior depth of Breadth-First-Search when constructing the post-synthesis locality representations
+
+-XOutDepthCutoff: Maximum anterior depth of Breadth-First-Search when constructing the post-synthesis locality representations
+
+-YNodeCut: The predicted pre-synthesis locality size. Also the locality size cutoffs when constructing the pre-synthesis locality representations
+
+-YDepthCutoff: Maximum depth of Breadth-First-Search when constructing the pre-synthesis locality representations
+
+-maxKeyBits: Number of the bits in the largest key used among all the netlists begin used for the analysis.
+
+-keyBaseName_Train: The name of the key input variable. All keys must be declared as an array in Verilog.
+
+-unityDSPath: Path to the Training Dataset. For a design X, name the pre synthesis design "X_pre.v" and name the post synthesis design as "X_post.v". Put them in a folder called "netlists" in this path provided. Please put a "/" at the end of the path. The script will create, delete, modify folders/files in this path so make sure you have a backup of all the data in this location. 
+
+-lib: Keep it -1 for now. This will be of use when we add support to libraries other than GSC.
+
+-verbose: Keep it at 0 to avoid seeing debug messages.
+
+-modelOutPath: The path and name of the trained model file that SAIL will be generating. Please use ".npy" as the extension. The script will overwrite any exisiting file at this path. 
+
+--------------------------------------------
+
+
+**********************************************
+#Evaluating a <pre-synthesis, post-synthesis> pair using a pre-trained SAIL model:
+--------------------------------------------
+
+Executable to use: SAIL-RD_Evaluate (Run it from inside ./binary/)
+--------------------------------------------
+
+Sample Commands:
+
+./SAIL-RD_Evaluate -XNodeCut 3_4_5 -XInDepthCutoff 2 -XOutDepthCutoff 2 -YNodeCut 3 -YDepthCutoff 2 -maxKeyBits 512 -keyBaseName_Test keyIn -preNetlist ../RN-XOR_StandardDS_Test_Dataset/netlists/10_c1355_pre.v -postNetlist ../RN-XOR_StandardDS_Test_Dataset/netlists/10_c1355_post.v -lib -1 -verbose 0 -modelPath ../RN-XOR_FullModel.npy -tempFolderPath ../temp1/ -topN 5
+
+
+-XNodeCut: A list of locality size cutoffs when constructing the post-synthesis locality representations. Multiple localities separated by "_".
+
+-XInDepthCutoff: Maximum posterior depth of Breadth-First-Search when constructing the post-synthesis locality representations
+
+-XOutDepthCutoff: Maximum anterior depth of Breadth-First-Search when constructing the post-synthesis locality representations
+
+-YNodeCut: The predicted pre-synthesis locality size. Also the locality size cutoffs when constructing the pre-synthesis locality representations
+
+-YDepthCutoff: Maximum depth of Breadth-First-Search when constructing the pre-synthesis locality representations
+
+-maxKeyBits: Number of the bits in the largest key used among all the netlists begin used for the analysis.
+
+-keyBaseName_Test: The name of the key input variable. All keys must be declared as an array in Verilog.
+
+-preNetlist: Path to the pre-synthesis netlist.
+
+-postNetlist: Path to the post-synthesis netlist.
+
+-lib: Keep it -1 for now. This will be of use when we add support to libraries other than GSC.
+
+-verbose: Keep it at 0 to avoid seeing debug messages.
+
+-modelPath: The path to the trained SAIL model.
+
+-topN: Choose N for the Top-N accuracy metric. This should be reported along with the results.
+
+-tempFolderPath: Path to a working space for the script. The script will create, delete, modify folders/files in this path so make sure you have a backup of all the data in this location. 
+
+--------------------------------------------
+
+The predicted locality outputs are stored in <tempFolderPath>/SAIL_RD_results
+
+**********************************************
+
+Tips:
+
+1) Keeping XInDepthCutoff, XOutDepthCutoff and YDepthCutoff set to 2 should be sifficient for dealing with localities upto size 6 gates. For evaluating a very large locality size above 6, you may try setting them to 3 or higher.
+
+2) If you set YNodeCut to say "A", then for XNodeCut use "<A>_<A+1>_<A+2>". This is a general rule of thumb that we believe works best. Free feel to experiment.
+
+3) Reporting results for topN = (1, 5, 10, 20) gives a good picture of the SAIL efficiency for the given design.
+
+4) The SAIL attack works best if we train the model for the target locking technique. However, one can use a pre-trained model which was trained on a different locking technique dataset.
+
+5) The provided model ("RN-XOR_FullModel.npy") was trained on more than 50,000 <preSynthesis, postSynthesis> locality pairs with settings <-XNodeCut 3_4_5 -XInDepthCutoff 2 -XOutDepthCutoff 2 -YNodeCut 3 -YDepthCutoff 2>. The target locking technique was XOR-based locking. This model may not work well for locking techniques that employ different locking gates than XOR-based logic locking.
+
+
+**********************************************
+#Questions?
+Contact: Prabuddha Chakraborty (p.chakraborty@ufl.edu)
+
+
