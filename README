@@ -20,7 +20,7 @@ You running this script/function means you will not blame the author(s) for any 
 **********************************************
 #System Requirements:
 ----------------------------------------------
-SAIL 0.1.0 has been tested on the following:
+SAIL 0.1.0 has been tested on the following setups:
 * Red Hat Enterprise Linux Server release 7.9 (Maipo) x86
 * Ubuntu 16.04.6 LTS x86
 
@@ -36,7 +36,7 @@ Assign statements are only supported after input/output/wire declarations and be
 
 Pre-synthesis, post-synthesis locked design pairs should have the naming convention <design_name>_pre.v and <design_name>_post.v. The design_name should be same and cannot have '_' character.
 
-Example are provided in <RN-XOR_StandardDS_Test_Dataset> and  <RN-XOR_StandardDS_Train_Dataset>.
+Examples are provided in <RN-XOR_StandardDS_Test_Dataset> and  <RN-XOR_StandardDS_Train_Dataset>.
 
 **********************************************
 #Training a SAIL Model From Scratch:
